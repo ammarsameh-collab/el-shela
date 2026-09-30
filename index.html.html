@@ -220,7 +220,7 @@
                 <div class="flex justify-center items-center gap-2 bg-darkBg/50 p-2.5 rounded-xl border border-gray-800 max-w-sm mx-auto">
                     <label class="text-xs text-gray-400">حدد الوقت (دقائق):</label>
                     <input type="number" id="custom-minutes" min="1" max="180" value="25" class="w-16 bg-darkBg border border-gray-700 rounded-lg p-1 text-center font-bold text-sm">
-                    <button onclick="applyCustomTime()" class="bg-accentBlue text-darkBg font-bold px-3 py-1 rounded-lg text-xs hover:opacity-90">تطبيق ⚙️</button>
+                    <button onclick="applyCustomTime()" class="bg-accentBlue text-darkBg font-bold px-3 py-1 rounded-lg text-xs hover:opacity-90">تطبيق ⚙️️</button>
                 </div>
 
                 <!-- Timer Controls -->
@@ -642,7 +642,6 @@
             document.getElementById('chat-input').value = '';
             renderChat();
             
-            // Remove the animation flag after rendering so it doesn't replay on page reload
             setTimeout(() => {
                 if(messages.length > 0) messages[messages.length - 1].isNew = false;
             }, 400);
