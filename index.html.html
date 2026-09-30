@@ -22,13 +22,17 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs (Compat Version for smooth HTML integration) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
         .neon-glow-blue { text-shadow: 0 0 10px rgba(0, 242, 254, 0.6); }
         .neon-glow-green { text-shadow: 0 0 10px rgba(16, 185, 129, 0.6); }
         .glass-card { background: rgba(19, 28, 46, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); }
         
-        /* Ultra Smooth Instagram-like Tab Transitions */
         .tab-section {
             display: none;
             opacity: 0;
@@ -41,22 +45,14 @@
             transform: scale(1) translateY(0);
         }
 
-        /* Message Send Animation */
         @keyframes messageAppear {
-            from {
-                opacity: 0;
-                transform: translateY(15px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-message {
             animation: messageAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Custom Scrollbar for Chat & Lists */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(11, 15, 25, 0.5); }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
@@ -144,7 +140,7 @@
 
                 <!-- Matches Table & Gaming Leaderboard -->
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- Gaming Leaderboard (Player of the Month) -->
+                    <!-- Gaming Leaderboard -->
                     <div class="glass-card p-6 rounded-2xl shadow-xl">
                         <h2 class="text-lg font-bold text-yellow-400 mb-3 flex items-center gap-2"><span>👑</span> لعيب الشهر في الجيمينج (Gaming Leaderboard)</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="gaming-podium"></div>
@@ -175,13 +171,12 @@
 
         <!-- 2. Study & Tasks & Pomodoro Tab -->
         <section id="tab-study" class="tab-section space-y-6">
-            <!-- Grid Row: Tasks & Notes -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Task Manager -->
                 <div class="glass-card p-6 rounded-2xl shadow-xl">
                     <h2 class="text-lg font-bold text-accentBlue mb-4 flex items-center gap-2"><span>📋</span> مدير مهام الشلة (Task Manager)</h2>
                     <form onsubmit="addTask(event)" class="space-y-3 mb-6">
-                        <input type="text" id="task-title" placeholder="اكتب المهمة أو التارجت (مثلا: مذاكرة شابتر 1 بايثون)..." required class="w-full bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-accentBlue">
+                        <input type="text" id="task-title" placeholder="اكتب المهمة أو التارجت..." required class="w-full bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-accentBlue">
                         <div class="grid grid-cols-2 gap-3">
                             <select id="task-assignee" class="bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none member-select"></select>
                             <select id="task-priority" class="bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none">
@@ -199,7 +194,7 @@
                     <h2 class="text-lg font-bold text-accentGreen mb-4 flex items-center gap-2"><span>📓</span> ملاحظات ويوميات الدراسة</h2>
                     <form onsubmit="addNote(event)" class="space-y-3 mb-6">
                         <select id="note-author" class="w-full bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none member-select"></select>
-                        <textarea id="note-content" rows="3" placeholder="اكتب ملخصك، الكود اللي خلصته، أو نوتس تهم الشلة..." required class="w-full bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-accentGreen"></textarea>
+                        <textarea id="note-content" rows="3" placeholder="اكتب ملخصك أو الكود..." required class="w-full bg-darkBg border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-accentGreen"></textarea>
                         <button type="submit" class="w-full bg-accentGreen text-darkBg font-bold py-2.5 rounded-xl text-sm hover:opacity-90">حفظ ونشر الملاحظة 📝</button>
                     </form>
                     <div id="notes-list" class="space-y-3 max-h-64 overflow-y-auto"></div>
@@ -210,27 +205,17 @@
             <div class="glass-card p-6 rounded-2xl shadow-xl text-center space-y-4 max-w-xl mx-auto">
                 <h2 class="text-lg font-bold text-yellow-400 flex items-center justify-center gap-2"><span>⏳</span> عداد بومودورو المخصص</h2>
                 <p id="pomo-mode-label" class="text-xs font-bold text-accentBlue">وقت التركيز العالي 🔥</p>
-                
-                <!-- Timer Display -->
-                <div id="pomo-display" class="text-5xl font-black tracking-wider text-white bg-darkBg/60 py-4 rounded-2xl border border-gray-800 neon-glow-blue inline-block px-8 my-1">
-                    25:00
-                </div>
-
-                <!-- Custom Time Input -->
+                <div id="pomo-display" class="text-5xl font-black tracking-wider text-white bg-darkBg/60 py-4 rounded-2xl border border-gray-800 neon-glow-blue inline-block px-8 my-1">25:00</div>
                 <div class="flex justify-center items-center gap-2 bg-darkBg/50 p-2.5 rounded-xl border border-gray-800 max-w-sm mx-auto">
                     <label class="text-xs text-gray-400">حدد الوقت (دقائق):</label>
                     <input type="number" id="custom-minutes" min="1" max="180" value="25" class="w-16 bg-darkBg border border-gray-700 rounded-lg p-1 text-center font-bold text-sm">
-                    <button onclick="applyCustomTime()" class="bg-accentBlue text-darkBg font-bold px-3 py-1 rounded-lg text-xs hover:opacity-90">تطبيق ⚙️️</button>
+                    <button onclick="applyCustomTime()" class="bg-accentBlue text-darkBg font-bold px-3 py-1 rounded-lg text-xs hover:opacity-90">تطبيق ⚙️</button>
                 </div>
-
-                <!-- Timer Controls -->
                 <div class="flex justify-center gap-2">
                     <button onclick="startPomodoro()" class="bg-accentGreen text-darkBg font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 shadow-lg">ابدأ ▶️</button>
                     <button onclick="pausePomodoro()" class="bg-yellow-500 text-darkBg font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 shadow-lg">إيقاف ⏸</button>
                     <button onclick="resetPomodoro()" class="bg-red-500 text-white font-bold px-4 py-2 rounded-xl text-xs hover:opacity-90 shadow-lg">إعادة ضبط 🔄</button>
                 </div>
-
-                <!-- Member Session Logger -->
                 <div class="pt-2 border-t border-gray-800 flex items-center gap-2 max-w-md mx-auto">
                     <select id="pomo-user" class="bg-darkBg border border-gray-700 rounded-xl p-2 text-xs flex-grow member-select"></select>
                     <button onclick="finishPomoSession()" id="pomo-btn-text" class="bg-gradient-to-r from-accentBlue to-accentGreen text-darkBg font-bold px-3 py-2 rounded-xl text-xs hover:opacity-90">سجل الجلسة (+25 نقطة) 🚀</button>
@@ -258,10 +243,9 @@
             </div>
         </section>
 
-        <!-- 3. Instagram-Style Chat Tab -->
+        <!-- 3. Chat Tab -->
         <section id="tab-chat" class="tab-section space-y-4">
             <div class="glass-card rounded-2xl shadow-2xl max-w-3xl mx-auto flex flex-col h-[580px] border border-gray-800 overflow-hidden">
-                <!-- Chat Header -->
                 <div class="bg-darkBg/80 px-5 py-3.5 border-b border-gray-800 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-accentBlue to-accentGreen flex items-center justify-center text-darkBg font-black text-lg shadow-md">⚡</div>
                     <div>
@@ -269,11 +253,7 @@
                         <p class="text-[11px] text-accentGreen flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-accentGreen animate-ping"></span> متواجدون الآن</p>
                     </div>
                 </div>
-
-                <!-- Messages Feed (Instagram Style with Custom Colors & Medium Font) -->
                 <div id="chat-messages" class="flex-grow bg-darkBg/40 p-4 overflow-y-auto space-y-4"></div>
-
-                <!-- Chat Input Form -->
                 <form onsubmit="sendChatMessage(event)" class="bg-darkBg/90 p-3 border-t border-gray-800 flex items-center gap-2">
                     <select id="chat-sender" class="bg-darkBg border border-gray-700 rounded-xl px-2.5 py-2 text-xs focus:outline-none member-select font-bold text-accentBlue max-w-[130px]"></select>
                     <input type="text" id="chat-input" placeholder="رسالة جديدة للشلة..." required class="flex-grow bg-darkBg border border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentBlue text-gray-200">
@@ -289,8 +269,23 @@
         جميع الحقوق محفوظة لصالح "الشلة" العظمة © 2026 | حنانكم يرجاله ⚡
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- Firebase Configuration & Realtime Sync Script -->
     <script>
+        // إعدادات فايربيس الخاصة بمشروعك
+        const firebaseConfig = {
+            apiKey: "AIzaSy...", // ضع مفتاحك هنا إن لم يكن موجوداً أو دعه كما هو
+            authDomain: "el-shela-59ebc.firebaseapp.com",
+            databaseURL: "https://el-shela-59ebc-default-rtdb.firebaseio.com",
+            projectId: "el-shela-59ebc",
+            storageBucket: "el-shela-59ebc.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
+        // تهيئة الفايربيس
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const members = [
             "عمار CS (أنا)",
             "كريم حنانك",
@@ -301,7 +296,6 @@
             "محمد كرم"
         ];
 
-        // Unique color map for each member
         const memberColors = {
             "عمار CS (أنا)": { bg: "bg-cyan-500/20 border-cyan-500/40", text: "text-cyan-300", nameColor: "text-cyan-400" },
             "كريم حنانك": { bg: "bg-emerald-500/20 border-emerald-500/40", text: "text-emerald-300", nameColor: "text-emerald-400" },
@@ -338,7 +332,6 @@
             }
         }
 
-        // Ultra Smooth Tab Switching
         function switchTab(tabName) {
             ['fifa', 'study', 'chat'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
@@ -346,32 +339,70 @@
                 section.classList.remove('active');
                 btn.className = "px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-400 hover:text-white";
             });
-            
-            const activeSection = document.getElementById(`tab-${tabName}`);
-            activeSection.classList.add('active');
-            const activeBtn = document.getElementById(`btn-${tabName}`);
-            activeBtn.className = "px-4 py-2 rounded-lg font-bold text-sm transition-all bg-accentGreen text-darkBg shadow-lg";
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`btn-${tabName}`).className = "px-4 py-2 rounded-lg font-bold text-sm transition-all bg-accentGreen text-darkBg shadow-lg";
         }
 
-        // --- Leaderboard & Points State ---
-        let scores = JSON.parse(localStorage.getItem('shulla_scores')) || {};
-        members.forEach(m => { if(scores[m] === undefined) scores[m] = 0; });
+        // --- Realtime Data Sync with Firebase ---
+        let scores = {};
+        let gamingScores = {};
+        let matches = [];
+        let tasks = [];
+        let notes = [];
+        let messages = [];
+
+        // الاستماع لتحديثات النقاط مباشرة
+        db.ref('scores').on('value', (snapshot) => {
+            scores = snapshot.val() || {};
+            members.forEach(m => { if(scores[m] === undefined) scores[m] = 0; });
+            renderLeaderboard();
+        });
+
+        db.ref('gamingScores').on('value', (snapshot) => {
+            gamingScores = snapshot.val() || {};
+            members.forEach(m => { if(gamingScores[m] === undefined) gamingScores[m] = 0; });
+            renderGamingLeaderboard();
+        });
+
+        // الاستماع للمباريات
+        db.ref('matches').on('value', (snapshot) => {
+            const data = snapshot.val();
+            matches = data ? Object.entries(data).map(([key, val]) => ({ id: key, ...val })).reverse() : [];
+            renderMatches();
+        });
+
+        // الاستماع للمهام
+        db.ref('tasks').on('value', (snapshot) => {
+            const data = snapshot.val();
+            tasks = data ? Object.entries(data).map(([key, val]) => ({ id: key, ...val })).reverse() : [];
+            renderTasks();
+        });
+
+        // الاستماع للملاحظات
+        db.ref('notes').on('value', (snapshot) => {
+            const data = snapshot.val();
+            notes = data ? Object.entries(data).map(([key, val]) => ({ id: key, ...val })).reverse() : [];
+            renderNotes();
+        });
+
+        // الاستماع للشات المباشر
+        db.ref('chat').on('value', (snapshot) => {
+            const data = snapshot.val();
+            messages = data ? Object.values(data) : [];
+            renderChat();
+        });
 
         function addPoints(member, pts) {
-            if(scores[member] !== undefined) {
-                scores[member] += pts;
-            } else {
-                scores[member] = pts;
-            }
-            localStorage.setItem('shulla_scores', JSON.stringify(scores));
-            renderLeaderboard();
-            renderGamingLeaderboard();
+            db.ref('scores/' + member).transaction(current => (current || 0) + pts);
+        }
+
+        function addGamingPoints(member, pts) {
+            db.ref('gamingScores/' + member).transaction(current => (current || 0) + pts);
         }
 
         function renderLeaderboard() {
             const list = document.getElementById('leaderboard-list');
             const sortedMembers = [...members].sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
-            
             list.innerHTML = sortedMembers.map((m, idx) => {
                 let badge = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
                 return `
@@ -384,24 +415,9 @@
             }).join('');
         }
 
-        // Gaming Specific Leaderboard (Player of the Month)
-        let gamingScores = JSON.parse(localStorage.getItem('shulla_gaming_scores')) || {};
-        members.forEach(m => { if(gamingScores[m] === undefined) gamingScores[m] = 0; });
-
-        function addGamingPoints(member, pts) {
-            if(gamingScores[member] !== undefined) {
-                gamingScores[member] += pts;
-            } else {
-                gamingScores[member] = pts;
-            }
-            localStorage.setItem('shulla_gaming_scores', JSON.stringify(gamingScores));
-            renderGamingLeaderboard();
-        }
-
         function renderGamingLeaderboard() {
             const container = document.getElementById('gaming-podium');
             const sortedGaming = [...members].sort((a, b) => (gamingScores[b] || 0) - (gamingScores[a] || 0)).slice(0, 3);
-            
             container.innerHTML = sortedGaming.map((m, idx) => {
                 let crown = idx === 0 ? '👑 البطل' : (idx === 1 ? '🥈 الوصيف' : '🥉 الثالث');
                 let borderCol = idx === 0 ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-800 bg-darkBg/50';
@@ -415,7 +431,7 @@
             }).join('');
         }
 
-        // --- Pomodoro Timer Logic with Custom Time & Dynamic Points ---
+        // --- Pomodoro Hub ---
         let pomoTime = 25 * 60;
         let pomoInterval = null;
         let isPomoRunning = false;
@@ -423,16 +439,12 @@
         function updatePomoDisplay() {
             const minutes = Math.floor(pomoTime / 60);
             const seconds = pomoTime % 60;
-            document.getElementById('pomo-display').innerText = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('pomo-display').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         function applyCustomTime() {
             const mins = parseInt(document.getElementById('custom-minutes').value);
-            if(isNaN(mins) || mins <= 0) {
-                alert('اكتب رقم دقائق صحيح يا برنس!');
-                return;
-            }
+            if(isNaN(mins) || mins <= 0) return alert('اكتب دقائق صحيحة!');
             clearInterval(pomoInterval);
             isPomoRunning = false;
             pomoTime = mins * 60;
@@ -445,43 +457,23 @@
             if(isPomoRunning) return;
             isPomoRunning = true;
             pomoInterval = setInterval(() => {
-                if(pomoTime > 0) {
-                    pomoTime--;
-                    updatePomoDisplay();
-                } else {
-                    clearInterval(pomoInterval);
-                    isPomoRunning = false;
-                    alert('خلص وقت الجلسة يا برنس! عاش إصرارك ☕🔥');
-                }
+                if(pomoTime > 0) { pomoTime--; updatePomoDisplay(); }
+                else { clearInterval(pomoInterval); isPomoRunning = false; alert('خلص وقت الجلسة يا برنس!'); }
             }, 1000);
         }
-
-        function pausePomodoro() {
-            clearInterval(pomoInterval);
-            isPomoRunning = false;
-        }
-
+        function pausePomodoro() { clearInterval(pomoInterval); isPomoRunning = false; }
         function resetPomodoro() {
             clearInterval(pomoInterval);
             isPomoRunning = false;
-            const mins = parseInt(document.getElementById('custom-minutes').value) || 25;
-            pomoTime = mins * 60;
+            pomoTime = (parseInt(document.getElementById('custom-minutes').value) || 25) * 60;
             updatePomoDisplay();
         }
-
         function finishPomoSession() {
             const user = document.getElementById('pomo-user').value;
             const mins = parseInt(document.getElementById('custom-minutes').value) || 25;
             addPoints(user, mins);
-            alert(`تم تسجيل جلسة مذاكرة لـ ${user} بقيمة ${mins} دقيقة (+${mins} نقطة)! كفو يا بطل 🚀🔥`);
+            alert(`تم تسجيل جلسة مذاكرة لـ ${user} بقيمة ${mins} دقيقة (+${mins} نقطة)! 🚀`);
         }
-
-        let matches = JSON.parse(localStorage.getItem('shulla_matches')) || [];
-        let tasks = JSON.parse(localStorage.getItem('shulla_tasks')) || [];
-        let notes = JSON.parse(localStorage.getItem('shulla_notes')) || [];
-        let messages = JSON.parse(localStorage.getItem('shulla_chat')) || [
-            { sender: 'عمار CS (أنا)', text: 'منورين يا رجالة، تم تظبيط ألوان الشات وخطوطه المتوسطة والـ Send Effect ⚡🔥', time: '11:35 م' }
-        ];
 
         // --- FIFA Functions ---
         function addMatch(e) {
@@ -489,36 +481,23 @@
             const type = document.getElementById('match-type').value;
             const s1 = parseInt(document.getElementById('score1').value);
             const s2 = parseInt(document.getElementById('score2').value);
-            
             let team1Name, team2Name, winner;
 
             if(type === '1v1') {
                 const p1 = document.getElementById('player1').value;
                 const p2 = document.getElementById('player2').value;
-                if(p1 === p2) { alert('ما ينفعش اللاعب يلعب مع نفسه!'); return; }
-                team1Name = p1;
-                team2Name = p2;
-                
-                if (s1 > s2) {
-                    winner = p1;
-                    addPoints(p1, 10);
-                    addGamingPoints(p1, 10);
-                } else if (s2 > s1) {
-                    winner = p2;
-                    addPoints(p2, 10);
-                    addGamingPoints(p2, 10);
-                } else {
-                    winner = 'تعادل 🤝';
-                }
+                if(p1 === p2) return alert('ما ينفعش اللاعب يلعب مع نفسه!');
+                team1Name = p1; team2Name = p2;
+                if (s1 > s2) { winner = p1; addPoints(p1, 10); addGamingPoints(p1, 10); }
+                else if (s2 > s1) { winner = p2; addPoints(p2, 10); addGamingPoints(p2, 10); }
+                else { winner = 'تعادل 🤝'; }
             } else {
                 const tp1_1 = document.getElementById('t1_p1').value;
                 const tp1_2 = document.getElementById('t1_p2').value;
                 const tp2_1 = document.getElementById('t2_p1').value;
                 const tp2_2 = document.getElementById('t2_p2').value;
-                
                 team1Name = `${tp1_1} & ${tp1_2}`;
                 team2Name = `${tp2_1} & ${tp2_2}`;
-                
                 if (s1 > s2) {
                     winner = `فريق أ (${team1Name})`;
                     addPoints(tp1_1, 5); addGamingPoints(tp1_1, 5);
@@ -527,20 +506,16 @@
                     winner = `فريق ب (${team2Name})`;
                     addPoints(tp2_1, 5); addGamingPoints(tp2_1, 5);
                     addPoints(tp2_2, 5); addGamingPoints(tp2_2, 5);
-                } else {
-                    winner = 'تعادل 🤝';
-                }
+                } else { winner = 'تعادل 🤝'; }
             }
 
-            matches.unshift({ type, team1Name, team2Name, s1, s2, winner });
-            localStorage.setItem('shulla_matches', JSON.stringify(matches));
-            renderMatches();
+            db.ref('matches').push({ type, team1Name, team2Name, s1, s2, winner });
+            document.getElementById('fifa-form').reset();
+            toggleMatchType();
         }
 
-        function deleteMatch(index) {
-            matches.splice(index, 1);
-            localStorage.setItem('shulla_matches', JSON.stringify(matches));
-            renderMatches();
+        function deleteMatch(id) {
+            db.ref('matches/' + id).remove();
         }
 
         function renderMatches() {
@@ -549,14 +524,14 @@
                 list.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-gray-500">مفيش ماتشات متسجلة لحد دلوقتي.</td></tr>`;
                 return;
             }
-            list.innerHTML = matches.map((m, idx) => `
+            list.innerHTML = matches.map(m => `
                 <tr class="hover:bg-darkBg/30 transition">
                     <td class="p-3 font-bold text-yellow-400 text-xs">${m.type}</td>
                     <td class="p-3 font-semibold text-accentBlue">${m.team1Name}</td>
                     <td class="p-3 text-center font-black bg-darkBg/40">${m.s1} - ${m.s2}</td>
                     <td class="p-3 font-semibold">${m.team2Name}</td>
                     <td class="p-3 text-center text-accentGreen font-bold">${m.winner}</td>
-                    <td class="p-3 text-center"><button onclick="deleteMatch(${idx})" class="text-red-400 hover:text-red-600 font-bold">🗑️</button></td>
+                    <td class="p-3 text-center"><button onclick="deleteMatch('${m.id}')" class="text-red-400 hover:text-red-600 font-bold">🗑️</button></td>
                 </tr>
             `).join('');
         }
@@ -567,40 +542,33 @@
             const title = document.getElementById('task-title').value;
             const assignee = document.getElementById('task-assignee').value;
             const priority = document.getElementById('task-priority').value;
-            tasks.unshift({ title, assignee, priority, done: false });
-            localStorage.setItem('shulla_tasks', JSON.stringify(tasks));
+            db.ref('tasks').push({ title, assignee, priority, done: false });
             document.getElementById('task-title').value = '';
-            renderTasks();
         }
 
-        function toggleTask(index) {
-            tasks[index].done = !tasks[index].done;
-            if(tasks[index].done) {
-                addPoints(tasks[index].assignee, 10);
-            }
-            localStorage.setItem('shulla_tasks', JSON.stringify(tasks));
-            renderTasks();
+        function toggleTask(id, currentDone, assignee) {
+            const newDone = !currentDone;
+            db.ref('tasks/' + id).update({ done: newDone });
+            if(newDone) addPoints(assignee, 10);
         }
 
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            localStorage.setItem('shulla_tasks', JSON.stringify(tasks));
-            renderTasks();
+        function deleteTask(id) {
+            db.ref('tasks/' + id).remove();
         }
 
         function renderTasks() {
             const list = document.getElementById('tasks-list');
             if(tasks.length === 0) { list.innerHTML = `<p class="text-center text-gray-500 text-xs py-4">مفيش مهام حالياً.</p>`; return; }
-            list.innerHTML = tasks.map((t, idx) => `
+            list.innerHTML = tasks.map(t => `
                 <div class="flex items-center justify-between bg-darkBg/50 p-2.5 rounded-xl border border-gray-800 ${t.done ? 'opacity-50 line-through' : ''}">
                     <div class="flex items-center gap-2.5">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${idx})" class="w-4 h-4 accent-accentGreen cursor-pointer">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask('${t.id}', ${t.done}, '${t.assignee}')" class="w-4 h-4 accent-accentGreen cursor-pointer">
                         <div>
                             <p class="text-xs font-bold text-white">${t.title}</p>
                             <span class="text-[10px] text-accentBlue">👤 ${t.assignee} | <span class="text-yellow-400">${t.priority}</span></span>
                         </div>
                     </div>
-                    <button onclick="deleteTask(${idx})" class="text-red-400 hover:text-red-600 text-xs">حذف</button>
+                    <button onclick="deleteTask('${t.id}')" class="text-red-400 hover:text-red-600 text-xs">حذف</button>
                 </div>
             `).join('');
         }
@@ -610,10 +578,9 @@
             e.preventDefault();
             const author = document.getElementById('note-author').value;
             const content = document.getElementById('note-content').value;
-            notes.unshift({ author, content, time: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) });
-            localStorage.setItem('shulla_notes', JSON.stringify(notes));
+            const time = new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+            db.ref('notes').push({ author, content, time });
             document.getElementById('note-content').value = '';
-            renderNotes();
         }
 
         function renderNotes() {
@@ -630,21 +597,14 @@
             `).join('');
         }
 
-        // --- Instagram-Style Chat with Medium Font & Unique Colors & Appear Animation ---
+        // --- Chat ---
         function sendChatMessage(e) {
             e.preventDefault();
             const sender = document.getElementById('chat-sender').value;
             const text = document.getElementById('chat-input').value;
             const time = new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
-            
-            messages.push({ sender, text, time, isNew: true });
-            localStorage.setItem('shulla_chat', JSON.stringify(messages));
+            db.ref('chat').push({ sender, text, time });
             document.getElementById('chat-input').value = '';
-            renderChat();
-            
-            setTimeout(() => {
-                if(messages.length > 0) messages[messages.length - 1].isNew = false;
-            }, 400);
         }
 
         function renderChat() {
@@ -652,15 +612,11 @@
             box.innerHTML = messages.map(m => {
                 const isMe = m.sender.includes("أنا");
                 const style = memberColors[m.sender] || { bg: "bg-gray-800 border-gray-700", text: "text-gray-200", nameColor: "text-gray-300" };
-                const animationClass = m.isNew ? 'animate-message' : '';
-
                 return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5 ${animationClass}">
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5 animate-message">
                         <span class="text-[11px] px-1 font-bold ${style.nameColor}">${m.sender}</span>
                         <div class="max-w-[80%] px-4 py-2.5 rounded-2xl text-sm shadow-md border ${
-                            isMe 
-                            ? 'bg-gradient-to-r from-accentBlue to-accentGreen text-darkBg font-black rounded-bl-2xl rounded-tr-none border-transparent' 
-                            : `${style.bg}${style.text} font-semibold rounded-br-2xl rounded-tl-none`
+                            isMe ? 'bg-gradient-to-r from-accentBlue to-accentGreen text-darkBg font-black rounded-bl-2xl rounded-tr-none border-transparent' : `${style.bg}${style.text} font-semibold rounded-br-2xl rounded-tl-none`
                         }">
                             <p class="whitespace-pre-wrap">${m.text}</p>
                         </div>
@@ -673,12 +629,6 @@
 
         window.onload = function() {
             initMembers();
-            renderMatches();
-            renderTasks();
-            renderNotes();
-            renderChat();
-            renderLeaderboard();
-            renderGamingLeaderboard();
             updatePomoDisplay();
         };
     </script>
